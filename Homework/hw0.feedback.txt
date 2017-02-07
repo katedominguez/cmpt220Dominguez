@@ -1,0 +1,18 @@
+75 points
+
+Kate,
+
+- Good job in creating your accounts!
+
+- Good job in setting up your java compiler in your system.
+
+- Good job with your first GitHub submission!
+
+However, 
+
+Your repository is not properly organized. Please fix this as soon as possible.
+
+
+Peace,
+
+- Dr. Pablo Rivas
