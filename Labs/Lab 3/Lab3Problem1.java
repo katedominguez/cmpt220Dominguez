@@ -3,7 +3,7 @@ file: Lab3Problem1.java;
 Kaitlyn Dominguez
 CMPT 220
 Lab 3
-February 21, 2017
+February 21,  2017
 */
 
 import java.util.Scanner;
