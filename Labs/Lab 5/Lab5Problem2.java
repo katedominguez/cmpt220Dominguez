@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 public class Lab5Problem2{ 
   public static void main(String[] args){
+    //I had a weird compiling error with the arraylist for this problem and the third. I couldn't figure out why it wouldnt compile correctly
     //Create scanner
     Scanner input= new Scanner(System.in);
     //Add elements to list 1
@@ -23,9 +24,11 @@ public class Lab5Problem2{
     while (input.hasNextInt()) {
       list2.add(input.nextInt());
     }  
+    //Call method merge and print out the result
     System.out.println("The merged list is " + merge(list1, list2) );
   }
   public static int[] merge(int[] list1, int[] list2){
+    //Make a merged result array
     int[] result = new int[list1.length + list2.length];
     int x=0;
     for(int i=0; i<= list1.length; i++){
