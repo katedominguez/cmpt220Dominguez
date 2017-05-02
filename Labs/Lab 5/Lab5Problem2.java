@@ -33,7 +33,7 @@ public class Lab5Problem2{
     int x=0;
     for(int i=0; i<= list1.length; i++){
       for(int j=0; i<= list2.length; j++){
-	    if(list2[j] == list1[i]){
+        if(list2[j] == list1[i]){
           result[x]= list1[i];
           x=x+1;
         }
