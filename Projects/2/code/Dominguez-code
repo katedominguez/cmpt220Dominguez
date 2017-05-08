@@ -1,0 +1,444 @@
+/**
+file: Project2.java;
+Kaitlyn Dominguez
+CMPT 220
+Project 2
+March 24, 2017
+*/
+// For menu filters
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.MediaTracker;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BandCombineOp;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ByteLookupTable;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
+import java.awt.image.LookupOp;
+import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
+import java.net.URL;
+
+//Swing for menu filters
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+
+//For button filters
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.image.LookupTable;
+import java.awt.image.ShortLookupTable;
+
+//Swing for button filters
+import javax.swing.JButton;
+import javax.swing.border.TitledBorder;
+
+public class Project2 extends JFrame {
+  //Create menu title
+  private JMenu filterM = new JMenu("More Image Filters");
+  //Create imagePanel for menu
+  private ImagePanel imagePanel;
+  //Sharpen Filter
+  private MyFilter sharpen = new SharpenFilter();
+  //Blur Filter
+  private MyFilter blur = new BlurredFilter();
+  //Color Change Filter
+  private MyFilter color = new ColorFilter();
+  
+  //Create displayPanel for buttons
+  DisplayPanel displayPanel;
+  //Create brightness, contrast, color change and original picture buttons
+  JButton brightnessUpButton, brightnessDownButton, contrastUpButton, contrastDownButton, colorChangeButton, originalPicButton;
+
+  public Project2() {
+  //Application heading
+    super("Kaitlyn Dominguez Project 2");
+  //Get picture to edit
+    imagePanel = new ImagePanel(Project2.class.getResource("mypic.jpg"));
+
+  //Set up the menu
+    JMenuBar mb = new JMenuBar();
+    setJMenuBar(mb);
+    filterM.setMnemonic('I'); //mnemonic allows the user to go through the menu using a keyboard
+
+  //Menu Option: DIsplay Original Image
+    JMenuItem originalPic = new JMenuItem("Display Original Image");
+    originalPic.setMnemonic('O');
+    originalPic.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent a) {
+        imagePanel.displayOriginalImage();
+    }
+  });
+  
+    Container container = getContentPane();
+    //For the buttons
+    displayPanel = new DisplayPanel();
+    container.add(displayPanel);
+    //Set up button panel
+    JPanel panel = new JPanel();
+    
+    panel.setLayout(new GridLayout(3, 2)); //3 rows with 2 buttons in each, 6 total buttons
+    //Heading for Buttons
+    panel.setBorder(new TitledBorder("Click Each Button to Change Brightness, Contrast, and Colors"));
+
+  //Create Increase Brightness Button
+    brightnessUpButton = new JButton(" Increase Brightness -->");
+    brightnessUpButton.addActionListener(new ButtonListener());
+  //Create Decreate Brightness Button
+    brightnessDownButton = new JButton("Decrease Brightness <--");
+    brightnessDownButton.addActionListener(new ButtonListener());
+    //Create Increase Contrast Button
+    contrastUpButton = new JButton("Increase Contrast -->");
+    contrastUpButton.addActionListener(new ButtonListener());
+    //Create Decrease Contrast Button
+    contrastDownButton = new JButton("Decrease Contrast <--");
+    contrastDownButton.addActionListener(new ButtonListener());
+    //Create Reverse Colors Button
+    colorChangeButton = new JButton("Reverse All Colors");
+    colorChangeButton.addActionListener(new ButtonListener());
+  //Create a button that takes the user back to their original picture
+    originalPicButton = new JButton("Original Picture");
+    originalPicButton.addActionListener(new ButtonListener());
+
+    //Add all 6 buttons to the panel aka print the buttons
+    panel.add(brightnessUpButton);
+    panel.add(brightnessDownButton);
+    panel.add(contrastUpButton);
+    panel.add(contrastDownButton);
+    panel.add(colorChangeButton);
+    panel.add(originalPicButton);
+
+    //Add a border to the bottom of the button panel
+    container.add(BorderLayout.SOUTH, panel);
+    //Set size of the panel
+    addWindowListener(new WindowEventHandler());
+    setSize(displayPanel.getWidth(), displayPanel.getHeight() + 25);
+    show();
+    repaint();
+    
+    //Create all the items on the menu
+    JMenuItem sharpenMenuItem = createMenuItem("Sharpen", 'S', sharpen);
+    JMenuItem blurMenuItem = createMenuItem("Blur", 'B', blur);
+    JMenuItem changeColorsMenuItem = createMenuItem("Change Colors", 'C', color);
+  
+    //Add filters to Menu Filters
+    filterM.add(originalPic);
+    filterM.add(sharpenMenuItem);
+    filterM.add(blurMenuItem);
+    filterM.add(changeColorsMenuItem);
+
+  //Add menu filters to the menu bar
+    mb.add(filterM);
+
+  //Add a border to the panel
+    getContentPane().add(imagePanel, BorderLayout.CENTER);
+
+  
+  } //end of Project2() 
+  
+  //Changes window status- window is closing then the system exits
+  class WindowEventHandler extends WindowAdapter {
+    public void windowClosing(WindowEvent e) {
+      System.exit(0);
+    }
+  }
+  
+  //Make the buttons work when they are clicked
+  class ButtonListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+      JButton button = (JButton) e.getSource(); //represents the button that has been clicked
+
+    //Calls the filter and the new image created when each button is clicked
+      if (button.equals(brightnessUpButton)) {
+        displayPanel.brightnessUpLUT();
+                displayPanel.applyFilter();
+                displayPanel.repaint();
+            } else if (button.equals(brightnessDownButton)) {
+                displayPanel.brightnessDownLUT();
+                displayPanel.applyFilter();
+                displayPanel.repaint();
+            } else if (button.equals(contrastUpButton)) {
+                displayPanel.contrastUpLUT();
+                displayPanel.applyFilter();
+                displayPanel.repaint();
+            } else if (button.equals(contrastDownButton)) {
+                displayPanel.contrastDownLUT();
+                displayPanel.applyFilter();
+                displayPanel.repaint();
+            } else if (button.equals(colorChangeButton)) {
+                displayPanel.colorChangeLUT();
+                displayPanel.applyFilter();
+                displayPanel.repaint();
+            } else if (button.equals(originalPicButton)) {
+                displayPanel.originalPic();
+                displayPanel.repaint();
+    }
+  }
+  }
+    
+  //Set menu names onto the menu (use mnemonics to allow user to use a keyboard)
+  public JMenuItem createMenuItem(String miName, char mnemonic, final MyFilter filter) {
+    JMenuItem mi = new JMenuItem(miName);
+    mi.setMnemonic(mnemonic);
+  //Allow the filter to be placed on the image once it is called from the menu
+    mi.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent action) {
+        imagePanel.applyFilter(filter);
+      }
+    });
+    return mi;
+  }
+
+  //Create the java application
+  public static void main(String args[]) {
+  Project2 application = new Project2();
+    application.setDefaultCloseOperation(EXIT_ON_CLOSE); //Program ends when the user closes the application
+    application.pack();
+    application.setVisible(true);
+  }
+} //end of class Project 2 extends JFrame
+
+
+//buffered image allows filters to be placed on the image
+interface MyFilter {
+  public abstract BufferedImage processImage(BufferedImage image);
+}
+
+//Creare blurred filter
+class BlurredFilter implements MyFilter {
+  public BufferedImage processImage(BufferedImage image) {
+  //Kernel needed for blurred filter
+    float[] blurredMatrix = { -1.0f, -1.0f, -1.0f , -1.0f, 8.0f, -1.0f , -1.0f, -1.0f, -1.0f };
+    BufferedImageOp blurFilter = new ConvolveOp(new Kernel(3, 3, blurredMatrix), ConvolveOp.EDGE_NO_OP, null);
+    return blurFilter.filter(image, null);
+  }
+}
+
+//Create panel where the image is displayed
+class ImagePanel extends JPanel{
+  //the filtered picture
+  private BufferedImage displayPicture;
+  //the original picture
+  private BufferedImage originalPicture;
+  private Image picture;
+
+  //Prints out the image 
+  public ImagePanel(URL imageURL){
+    picture = Toolkit.getDefaultToolkit().createImage(imageURL);
+    MediaTracker mediaTracker = new MediaTracker(this); //MediaTracker tracks the status of the images
+    mediaTracker.addImage(picture, 0);
+  //Use mediaTracker to make sure that the image is able to be filtered
+    try{
+      mediaTracker.waitForAll();
+    }catch (InterruptedException e){
+      e.printStackTrace();
+    }
+  //Get the dimensions of the original picture
+    originalPicture= new BufferedImage(picture.getWidth(null), picture.getHeight(null), BufferedImage.TYPE_INT_RGB);
+  //Display the picture (image that appears on the screen when the application is first opened- unfiltered)
+    displayPicture = originalPicture;
+    Graphics2D g = displayPicture.createGraphics();
+  //Print the image out through drawImage
+    g.drawImage(picture, null, null);
+  repaint();
+  }
+
+  //apply a filter to the picture displayed on the application
+  public void applyFilter(MyFilter filter) {
+    displayPicture = filter.processImage(displayPicture);
+    repaint();
+  }
+
+  //Display the original (unfiltered) picture
+  public void displayOriginalImage() {
+    displayPicture = new BufferedImage(picture.getWidth(null), picture.getHeight(null), BufferedImage.TYPE_INT_RGB);
+    Graphics2D g = displayPicture.createGraphics();
+    g.drawImage(originalPicture, null, null);
+    repaint();
+  }
+  //Allows picture to change
+  public void paintComponent(Graphics g) {
+    super.paintComponent(g);
+    Graphics2D gr = (Graphics2D) g;
+    g.drawImage(displayPicture, 0, 0, null);
+  repaint();
+  }
+  //Get the dimensions of what the filtered picture should be
+  public Dimension getPreferredSize() {
+    return new Dimension(displayPicture.getWidth(), displayPicture.getHeight());
+  }
+  //Get the minimum size for the filtered picture
+  public Dimension getMinimumSize() {
+    return getPreferredSize();
+  }
+}
+
+// Create Sharpen Filter
+class SharpenFilter implements MyFilter {
+  public BufferedImage processImage(BufferedImage picture) {
+    float[] sharpenMatrix = { 0.0f, -1.0f, 0.0f, -1.0f, 5.0f, -1.0f, 0.0f, -1.0f, 0.0f };
+    BufferedImageOp sharpenFilter = new ConvolveOp(new Kernel(3, 3, sharpenMatrix),ConvolveOp.EDGE_NO_OP, null);
+    return sharpenFilter.filter(picture, null);
+  }
+}
+
+//Create color change filter
+class ColorFilter implements MyFilter {
+  public BufferedImage processImage(BufferedImage picture) {
+    float[][] colorMatrix = { { 1f, 0f, 0f }, { 0.5f, 1.0f, 0.5f }, { 0.2f, 0.4f, 0.6f } };
+    BandCombineOp changeColors = new BandCombineOp(colorMatrix, null);
+    Raster sourceRaster = picture.getRaster();
+    WritableRaster displayRaster = sourceRaster.createCompatibleWritableRaster();
+    changeColors.filter(sourceRaster, displayRaster);
+    return new BufferedImage(picture.getColorModel(), displayRaster, true, null);
+  }
+}
+
+//Display panel class for buttons
+class DisplayPanel extends JPanel {
+    Image displayImage;
+    BufferedImage bi;
+    Graphics2D big;
+    LookupTable lookupTable;
+
+  //Constructor, calls load image and create buffered image
+    DisplayPanel() {
+      loadImage();
+      setSize(displayImage.getWidth(this), displayImage.getWidth(this)); //sets size for the display panel
+      createBufferedImage();
+    }
+  //Loads the image
+  public void loadImage() {
+      displayImage = Toolkit.getDefaultToolkit().getImage("mypic.jpg");
+      MediaTracker mt = new MediaTracker(this);
+      mt.addImage(displayImage, 1);
+      //Prints out explaination to the user in case the image can't be accessed
+      try {
+        mt.waitForAll();
+      } catch (Exception e) {
+          System.out.println("Exception while loading.");
+      }
+      //lets the user know if there is no picture
+      if (displayImage.getWidth(this) == -1) {
+        System.out.println("No jpg file");
+        System.exit(0);
+      }
+    }
+
+  
+ 
+    //Creates the filtered image
+    public void createBufferedImage() {
+      bi = new BufferedImage(displayImage.getWidth(this), displayImage.getHeight(this), BufferedImage.TYPE_INT_ARGB);
+      big = bi.createGraphics();
+      big.drawImage(displayImage, 0, 0, this);
+    repaint();
+    }
+
+  //LUT allows upper and lower bounds to be specified in a color model
+  //Function to increase brightness
+    public void brightnessUpLUT() {
+      short brightnessUp[] = new short[256];
+      for (int i = 0; i < 256; i++) {
+        short pixelValue = (short) (i + 10);
+        if (pixelValue > 255)
+          pixelValue = 255;
+        else if (pixelValue < 0)
+          pixelValue = 0;
+          brightnessUp[i] = pixelValue;
+        }
+        lookupTable = new ShortLookupTable(0, brightnessUp);
+    }
+
+  //Function to decrease brightness
+    public void brightnessDownLUT() {
+      short brightnessDown[] = new short[256];
+      for (int i = 0; i < 256; i++) {
+        short pixelValue = (short) (i - 10);
+        if (pixelValue > 255)
+          pixelValue = 255;
+        else if (pixelValue < 0)
+          pixelValue = 0;
+          brightnessDown[i] = pixelValue;
+    }
+      lookupTable = new ShortLookupTable(0, brightnessDown);
+    }
+
+  //Function to increase contrast
+    public void contrastUpLUT() {
+      short contrastUp[] = new short[256];
+      for (int i = 0; i < 256; i++) {
+        short pixelValue = (short) (i * 1.2);
+        if (pixelValue > 255)
+          pixelValue = 255;
+        else if (pixelValue < 0)
+          pixelValue = 0;
+          contrastUp[i] = pixelValue;
+      }
+      lookupTable = new ShortLookupTable(0, contrastUp);
+    }
+
+  //Function to decrease contrast
+    public void contrastDownLUT() {
+      short contrastDown[] = new short[256];
+      for (int i = 0; i < 256; i++) {
+        short pixelValue = (short) (i / 1.2);
+        if (pixelValue > 255)
+          pixelValue = 255;
+        else if (pixelValue < 0)
+          pixelValue = 0;
+          contrastDown[i] = pixelValue;
+      }
+      lookupTable = new ShortLookupTable(0, contrastDown);
+    }
+
+  //Function to change image colors
+    public void colorChangeLUT() {
+      byte colorChange[] = new byte[256];
+      for (int i = 0; i < 256; i++) {
+        colorChange[i] = (byte) (255 - i);
+      }
+      lookupTable = new ByteLookupTable(0, colorChange);
+    }
+
+  //Function to return back to the original (unfiltered) picture
+    public void originalPic() {
+      big.setColor(Color.black);
+      big.clearRect(0, 0, bi.getWidth(this), bi.getHeight(this));
+      big.drawImage(displayImage, 0, 0, this);
+    repaint();
+    }
+
+  //Applies filter to the picture
+    public void applyFilter() {
+      LookupOp lop = new LookupOp(lookupTable, null);
+      lop.filter(bi, bi);
+    }
+     //Updates dimensions
+    public void update(Graphics g) {
+      g.clearRect(0, 0, getWidth(), getHeight());
+      paintComponent(g);
+    }
+  
+    //Applies the color changes to the picture
+    public void paintComponent(Graphics g) {
+      super.paintComponent(g);
+      Graphics2D g2D = (Graphics2D) g;
+      g2D.drawImage(bi, 0, 0, this);
+    repaint();
+    }
+}
+
